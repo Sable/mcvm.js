@@ -1,0 +1,4 @@
+#!/usr/bin/env node
+var McVMJS = require("../lib/main");
+
+console.log(McVMJS);
