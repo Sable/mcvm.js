@@ -2,4 +2,6 @@
 var fs = require("fs");
 var McVMJS = require("../lib/main");
 
-McVMJS.compileMatlabFile(process.argv[2],console.log);
+McVMJS.parseMatlabFile(process.argv[2], function (ast) {
+    console.log(McVMJS.compileMatlabAST(ast));
+});
