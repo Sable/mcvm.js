@@ -1,7 +1,130 @@
 #!/usr/bin/env node
 var fs = require("fs");
 var McVMJS = require("../lib/main");
+var escodegen = require("escodegen");
 
-McVMJS.parseMatlabFile(process.argv[2], function (ast) {
-    console.log(McVMJS.compileMatlabAST(ast));
-});
+// Default options
+var options = {
+    prettyPrint : false,
+    readMatlabJSON : false,
+    jsCodegen : true,
+    traceJSAST : false,
+    traceMatlabAST : false,
+    traceJSCodeGen : false,
+    path : null 
+};
+
+function stringifyJSONThen(cb) {
+    return function (jsonObj) {
+        cb(options.prettyPrint?JSON.stringify(jsonObj,null,"  "):JSON.stringify(jsonObj));
+    };
+}
+
+function compileToJSASTThen(cb) {
+    return function (ast) {
+        cb(McVMJS.compileMatlabAST(ast));
+    };
+}
+
+function codegenToJSStringThen(cb) {
+    return function (ast) {
+        cb(escodegen.generate(ast));
+    }; 
+}
+
+function readMatlabAstFromJSONFileThen(cb) {
+    return function (path) {
+        cb(JSON.parse(fs.readFileSync(path)));
+    };
+}
+
+function readMatlabAstFromFileThen(cb) {
+    return function (path) {
+        McVMJS.parseMatlabFile(path,cb);
+    };
+}
+
+function logThen(cb) {
+    return function (s) {
+        console.log(s);
+        cb(s);
+    };
+}
+
+
+function doNothing() {}
+
+if (process.argv.length <= 2) {
+    var helpString = 
+    "mcmv-js OPTIONS FILE\n" +
+    "Options:\n" +
+    "    --read-matlab-json: FILE will be interpreted as a MATLAB JSON AST\n" +
+    "    --pretty-print: The output and traces will be pretty printed\n" + 
+    "    --trace-js-ast: log the JSON JS AST that was produced from the MATLAB AST\n" + 
+    "    --trace-js-codegen: log the JS code that was generated from the JS AST\n" + 
+    "    --no-js-codegen: skip the JS code generation phase\n";
+    console.log(helpString);
+    process.exit(0);
+} else {
+    for (var i = 2; i < process.argv.length; ++i) {
+        var option = process.argv[i];
+
+        if (option === "--read-matlab-json") {
+            options.readMatlabJSON = true;
+        } else if (option === "--pretty-print") {
+            options.prettyPrint = true;
+        } else if (option === "--trace-matlab-ast") {
+            options.traceMatlabAST = true;
+        } else if (option === "--trace-js-ast") {
+            options.traceJSAST = true;
+        } else if (option === "--trace-js-codegen") {
+            options.traceJSCodeGen = true;
+        } else if (option === "--no-js-codegen") {
+            options.jsCodegen = false;
+        } else {
+            options.path = option;
+        }
+    }
+}
+
+if (options.path === null) {
+    console.log("Error: No file path was provided");
+    process.exit(1);
+}
+
+function dup(cb1) {
+    return function (cb2) {
+        return function (value) {
+            cb1(value);
+            cb2(value);
+        }   
+    };
+}
+
+
+// Define the sequence of callbacks that will be called
+var steps = [];
+steps.push(options.readMatlabJSON ? readMatlabAstFromJSONFileThen : readMatlabAstFromFileThen);
+
+if (options.traceMatlabAST === true) {
+    steps.push(dup(stringifyJSONThen(console.log)));
+}
+
+steps.push(compileToJSASTThen);
+
+if (options.traceJSAST === true) {
+    steps.push(dup(stringifyJSONThen(console.log)));
+}
+
+if (options.jsCodegen === true) {
+    steps.push(codegenToJSStringThen);
+    steps.push(logThen);
+}
+
+// Assemble the callbacks together
+var next = doNothing;
+for (var i = steps.length-1; i >= 0; --i) {
+    next = steps[i](next);
+}
+// Call the first callback 
+next(options.path);
