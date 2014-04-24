@@ -11,6 +11,7 @@ var options = {
     traceJSAST : false,
     traceMatlabAST : false,
     traceJSCodeGen : false,
+    useInlineCaches : true,
     path : null 
 };
 
@@ -22,7 +23,7 @@ function stringifyJSONThen(cb) {
 
 function compileToJSASTThen(cb) {
     return function (ast) {
-        cb(McVMJS.compileMatlabAST(ast));
+        cb(McVMJS.compileMatlabAST(ast,options));
     };
 }
 
@@ -60,6 +61,7 @@ if (process.argv.length <= 2) {
     "Options:\n" +
     "    --read-matlab-json: FILE will be interpreted as a MATLAB JSON AST\n" +
     "    --pretty-print: The output and traces will be pretty printed\n" + 
+    "    --trace-matlab-ast: log the JSON MATLAB AST that was produced by the Natlab parser\n" + 
     "    --trace-js-ast: log the JSON JS AST that was produced from the MATLAB AST\n" + 
     "    --trace-js-codegen: log the JS code that was generated from the JS AST\n" + 
     "    --no-js-codegen: skip the JS code generation phase\n";
@@ -81,6 +83,8 @@ if (process.argv.length <= 2) {
             options.traceJSCodeGen = true;
         } else if (option === "--no-js-codegen") {
             options.jsCodegen = false;
+        } else if (option === "--nouse_ic") {
+            options.useInlineCaches = false;
         } else {
             options.path = option;
         }
@@ -126,5 +130,6 @@ var next = doNothing;
 for (var i = steps.length-1; i >= 0; --i) {
     next = steps[i](next);
 }
+
 // Call the first callback 
 next(options.path);
