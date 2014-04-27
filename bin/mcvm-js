@@ -64,6 +64,7 @@ if (process.argv.length <= 2) {
     "    --trace-matlab-ast: log the JSON MATLAB AST that was produced by the Natlab parser\n" + 
     "    --trace-js-ast: log the JSON JS AST that was produced from the MATLAB AST\n" + 
     "    --trace-js-codegen: log the JS code that was generated from the JS AST\n" + 
+    "    --nouse_ic: do not use run-time type feedback inline caches\n" +
     "    --no-js-codegen: skip the JS code generation phase\n";
     console.log(helpString);
     process.exit(0);

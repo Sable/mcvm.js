@@ -9,4 +9,5 @@ function bubbleJS(A) {
             }
         }
     }
+    return A;
 }
