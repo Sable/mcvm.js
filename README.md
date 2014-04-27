@@ -14,3 +14,8 @@ Usage
 =======
 
 calling 'bin/mcvm-js' outputs the supported options.
+
+Supported Benchmarks
+=======
+
+For now only, benchmarks/matlab/bubble.m is supported but there are plans to support all others in the near future.
