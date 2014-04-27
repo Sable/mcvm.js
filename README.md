@@ -3,7 +3,7 @@ mcvm-js
 
 Dynamically optimizing VM for MATLAB using JavaScript as a target.
 
-Required Dependency
+Required Dependencies
 =======
 
 make install will call npm to install the required dependencies.
