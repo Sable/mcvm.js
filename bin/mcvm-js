@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 var fs = require("fs");
+var path = require("path");
 var McVMJS = require("../lib/main");
 var escodegen = require("escodegen");
+var _McLib = require('../lib/mclib');
 
 // Default options
 var options = {
@@ -12,13 +14,20 @@ var options = {
     traceMatlabAST : false,
     traceJSCodeGen : false,
     useInlineCaches : true,
-    path : null 
+    path : null,
+    run: false
 };
 
 function stringifyJSONThen(cb) {
     return function (jsonObj) {
         cb(options.prettyPrint?JSON.stringify(jsonObj,null,"  "):JSON.stringify(jsonObj));
     };
+}
+
+function runJSThen (cb) { 
+    return function (jscode) {
+        cb(eval(jscode))
+    }
 }
 
 function compileToJSASTThen(cb) {
@@ -65,7 +74,8 @@ if (process.argv.length <= 2) {
     "    --trace-js-ast: log the JSON JS AST that was produced from the MATLAB AST\n" + 
     "    --trace-js-codegen: log the JS code that was generated from the JS AST\n" + 
     "    --nouse_ic: do not use run-time type feedback inline caches\n" +
-    "    --no-js-codegen: skip the JS code generation phase\n";
+    "    --no-js-codegen: skip the JS code generation phase\n" +
+    "    --run: run the generated code\n";
     console.log(helpString);
     process.exit(0);
 } else {
@@ -86,6 +96,8 @@ if (process.argv.length <= 2) {
             options.jsCodegen = false;
         } else if (option === "--nouse_ic") {
             options.useInlineCaches = false;
+        } else if (option === "--run") {
+            options.run = true;
         } else {
             options.path = option;
         }
@@ -124,6 +136,10 @@ if (options.traceJSAST === true) {
 if (options.jsCodegen === true) {
     steps.push(codegenToJSStringThen);
     steps.push(logThen);
+}
+
+if (options.run) {
+    steps.push(runJSThen);
 }
 
 // Assemble the callbacks together
