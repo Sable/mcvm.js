@@ -1,0 +1,46 @@
+{
+    "type": "compiler",
+    "short-name":"mcvm-js",
+    "supported-languages":[
+        "matlab"
+    ],
+    "target-languages":[
+        "js"
+    ],
+    "runner-name":"runner.js",
+    "commands": [
+        {
+            "executable-name": "cat",
+            "options": [
+                { "file": "./lib/numeric.js" },
+                { "file": "./lib/matlab.js" },
+                { "file": "./lib/mclib.js" },
+                { 
+                    "prefix": "> ", 
+                    "value": { "config": "/compiler/runner-name" } 
+                }
+            ]
+        },
+        {
+            "executable-name": "cat",
+            "options": [
+                { "config": "/implementation/core-source-files" },
+                { "config": "/implementation/runner-source-file" },
+                { 
+                    "prefix": "> ", 
+                    "value": "temp.m" 
+                }
+            ]
+        },
+        {   "executable-path": { "file": "./bin/mcvm-js" },
+            "options":[
+                "--nouse_ic",
+                "temp.m",
+                { 
+                    "prefix": ">> ",
+                    "value": { "config": "/compiler/runner-name" }
+                } 
+            ]
+        }
+    ]
+}
