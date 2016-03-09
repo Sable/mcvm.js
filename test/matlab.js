@@ -63,6 +63,16 @@ describe('matlab.js', function () {
             assert.ok(a.equals(matlab.Array.fromJSArray([4,5,6,7])))
             assert.ok(b.equals( matlab.Array.fromJSArray([1,5,6,7])))
             assert.notEqual(a._array, b._array)
+
+            a = matlab.Array.fromJSArray([4,5,6,7])
+            b = a.copy()
+            assert.ok(a.equals(a,b))
+            assert.equal(a._array, b._array)
+            a.set(1, 1, 1)
+            assert.ok(!a.equals(b))
+            assert.ok(a.equals(matlab.Array.fromJSArray([1,5,6,7])))
+            assert.ok(b.equals( matlab.Array.fromJSArray([4,5,6,7])))
+            assert.notEqual(a._array, b._array)
         })
     })
     
