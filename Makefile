@@ -1,4 +1,8 @@
-install:
+install: deps/McLabCore.jar
 	npm install
-	mkdir deps
-	echo "A recent version of the Natlab.jar archive from the McLab project should be put in the 'deps' directory"
+
+deps:
+	mkdir -p deps
+
+deps/McLabCore.jar: deps deps/McLabCore.jar
+	cd deps && wget https://github.com/Sable/mcvm.js/releases/download/0.1/McLabCore.jar
