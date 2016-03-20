@@ -13,7 +13,7 @@ var options = {
     traceJSAST : false,
     traceMatlabAST : false,
     traceJSCodeGen : false,
-    useInlineCaches : true,
+    useInlineCaches : false,
     path : null,
     run: false
 };
