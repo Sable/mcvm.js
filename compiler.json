@@ -1,6 +1,6 @@
 {
     "type": "compiler",
-    "short-name":"mcvm-js",
+    "short-name":"mcvm.js",
     "supported-languages":[
         "matlab"
     ],
@@ -32,7 +32,7 @@
                 }
             ]
         },
-        {   "executable-path": { "file": "./bin/mcvm-js" },
+        {   "executable-path": { "file": "./bin/mcvm.js" },
             "options":[
                 "--nouse_ic",
                 "temp.m",
