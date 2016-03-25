@@ -1,21 +1,58 @@
 #!/usr/bin/env node
 var fs = require("fs");
 var path = require("path");
-var McVMJS = require("../lib/main");
 var escodegen = require("escodegen");
-var _McLib = require('../lib/mclib');
+var nopt = require('nopt');
+var noptUsage = require('nopt-usage');
+var rootPath = path.join(__dirname, '..');
+var McVMJS = require(path.join(rootPath, 'lib', 'main'));
+var _McLib = require(path.join(rootPath, 'lib', 'mclib'));
 
-// Default options
+var knownOpts = {
+    'help': Boolean,
+    'no-js-codegen': Boolean,
+    'pretty-print': Boolean,
+    'read-matlab-json': Boolean,
+    'run': Boolean,
+    'trace-matlab-ast': Boolean,
+    'trace-js-ast': Boolean,
+    'trace-js-codegen': Boolean
+}
+
+var shortHands = {
+    'h': '--help'
+}
+
+var description = {
+    'help':             ' Display this help',
+    'no-js-codegen':    ' Skip the JS code generation phase',
+    'pretty-print':     ' The output and traces will be pretty printed',
+    'read-matlab-json': ' FILE will be interpreted as a MATLAB JSON AST',
+    'run':              ' Run the generated code',
+    'trace-matlab-ast': ' Log the JSON MATLAB AST that was produced by the Natlab parser',
+    'trace-js-ast':     ' Log the JSON JS AST that was produced from the MATLAB AST',
+    'trace-js-codegen': ' Log the JS code that was generated from the JS AST'
+}
+
+var parsed = nopt(knownOpts, shortHands)
+if (parsed.help || parsed.argv.remain.length < 1) {
+    var usage = noptUsage(knownOpts, shortHands, description)
+    console.log(path.basename(__filename) + ' OPTIONS FILE(S)')
+    console.log('Options:')
+    console.log(usage)
+    process.exit(1)
+}
+
 var options = {
-    prettyPrint : false,
-    readMatlabJSON : false,
-    jsCodegen : true,
-    traceJSAST : false,
-    traceMatlabAST : false,
-    traceJSCodeGen : false,
-    useInlineCaches : false,
-    path : null,
-    run: false
+    prettyPrint : !!parsed['pretty-print'],
+    readMatlabJSON : !!parsed['read-matlab-json'],
+    jsCodegen : !parsed['nojs-codegen'],
+    traceJSAST : !!parsed['trace-js-ast'],
+    traceMatlabAST : !!parsed['trace-matlab-ast'],
+    traceJSCodeGen : !!parsed['trace-js-codegen'],
+    useInlineCaches: false,
+    paths : parsed.argv.remain,
+    run: !!parsed['run']
 };
 
 function stringifyJSONThen(cb) {
@@ -51,14 +88,18 @@ function codegenToJSStringThen(cb) {
 }
 
 function readMatlabAstFromJSONFileThen(cb) {
-    return function (path) {
+    return function (paths) {
+        if (paths.length > 1) {
+            console.log('Unsupported multiple JSON files');
+            process.exit(1);
+        }
         cb(JSON.parse(fs.readFileSync(path)));
     };
 }
 
 function readMatlabAstFromFileThen(cb) {
-    return function (path) {
-        McVMJS.parseMatlabFile(path,cb);
+    return function (paths) {
+        McVMJS.parseMatlabFiles(paths,cb);
     };
 }
 
@@ -72,47 +113,8 @@ function logThen(cb) {
 
 function doNothing() {}
 
-if (process.argv.length <= 2) {
-    var helpString = 
-    "mcmv-js OPTIONS FILE\n" +
-    "Options:\n" +
-    "    --read-matlab-json: FILE will be interpreted as a MATLAB JSON AST\n" +
-    "    --pretty-print: The output and traces will be pretty printed\n" + 
-    "    --trace-matlab-ast: log the JSON MATLAB AST that was produced by the Natlab parser\n" + 
-    "    --trace-js-ast: log the JSON JS AST that was produced from the MATLAB AST\n" + 
-    "    --trace-js-codegen: log the JS code that was generated from the JS AST\n" + 
-    "    --nouse_ic: do not use run-time type feedback inline caches\n" +
-    "    --no-js-codegen: skip the JS code generation phase\n" +
-    "    --run: run the generated code\n";
-    console.log(helpString);
-    process.exit(0);
-} else {
-    for (var i = 2; i < process.argv.length; ++i) {
-        var option = process.argv[i];
 
-        if (option === "--read-matlab-json") {
-            options.readMatlabJSON = true;
-        } else if (option === "--pretty-print") {
-            options.prettyPrint = true;
-        } else if (option === "--trace-matlab-ast") {
-            options.traceMatlabAST = true;
-        } else if (option === "--trace-js-ast") {
-            options.traceJSAST = true;
-        } else if (option === "--trace-js-codegen") {
-            options.traceJSCodeGen = true;
-        } else if (option === "--no-js-codegen") {
-            options.jsCodegen = false;
-        } else if (option === "--nouse_ic") {
-            options.useInlineCaches = false;
-        } else if (option === "--run") {
-            options.run = true;
-        } else {
-            options.path = option;
-        }
-    }
-}
-
-if (options.path === null) {
+if (options.paths.length < 1) {
     console.log("Error: No file path was provided");
     process.exit(1);
 }
@@ -157,4 +159,4 @@ for (var i = steps.length-1; i >= 0; --i) {
 }
 
 // Call the first callback 
-next(options.path);
+next(options.paths);
