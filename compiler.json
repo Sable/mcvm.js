@@ -12,18 +12,6 @@
         {
             "executable-name": "cat",
             "options": [
-                { "file": "./lib/numeric.js" },
-                { "file": "./lib/matlab.js" },
-                { "file": "./lib/mclib.js" },
-                { 
-                    "prefix": "> ", 
-                    "value": { "config": "/compiler/runner-name" } 
-                }
-            ]
-        },
-        {
-            "executable-name": "cat",
-            "options": [
                 { "config": "/implementation/core-source-files" },
                 { "config": "/implementation/runner-source-file" },
                 { 

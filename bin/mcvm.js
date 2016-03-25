@@ -37,8 +37,16 @@ function compileToJSASTThen(cb) {
 }
 
 function codegenToJSStringThen(cb) {
+    var numericSrc = fs.readFileSync(path.join(__dirname, '..', 'lib', 'numeric.js')).toString()
+    var matlabSrc = fs.readFileSync(path.join(__dirname, '..', 'lib', 'matlab.js')).toString()
+    var mclibSrc = fs.readFileSync(path.join(__dirname, '..', 'lib', 'mclib.js')).toString()
     return function (ast) {
-        cb(escodegen.generate(ast));
+        cb([
+            numericSrc, 
+            matlabSrc, 
+            mclibSrc, 
+            escodegen.generate(ast)
+        ].join('\n'));
     }; 
 }
 
