@@ -145,7 +145,9 @@ if (options.traceJSAST === true) {
 
 if (options.jsCodegen === true) {
     steps.push(codegenToJSStringThen);
-    steps.push(logThen);
+    if (!options.run) {
+        steps.push(logThen);
+    }
 }
 
 if (options.run) {
