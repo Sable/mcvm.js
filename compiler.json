@@ -10,7 +10,7 @@
     "runner-name":"runner.js",
     "commands": [
         {
-            "executable-name": "cat",
+            "executable-path": { "suite-root": "/utilities/cat-with-nl" },
             "options": [
                 { "config": "/implementation/core-source-files" },
                 { "config": "/implementation/runner-source-file" },
@@ -22,7 +22,6 @@
         },
         {   "executable-path": { "file": "./bin/mcvm.js" },
             "options":[
-                "--nouse_ic",
                 "temp.m",
                 { 
                     "prefix": ">> ",
