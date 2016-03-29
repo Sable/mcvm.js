@@ -7,11 +7,15 @@ describe('matlab.js', function () {
 
   describe('Array', function () {
     it('create', function () {
-      assert.deepEqual(matlab.Array().getSize(), matlab.Array.fromJSArray([0, 1]))
-      assert.deepEqual(matlab.Array(5).getSize(), matlab.Array.fromJSArray([1, 5]))
+      assert.deepEqual(matlab.Array().getSize(), matlab.Array.fromJSArray([0, 0]))
+      assert.deepEqual(matlab.Array(1, 5).getSize(), matlab.Array.fromJSArray([1, 5]))
+      assert.deepEqual(matlab.Array(1, 5).getSize(), matlab.Array.fromJSArray([[1, 5]]))
       assert.deepEqual(matlab.Array(10, 20).getSize(), matlab.Array.fromJSArray([10, 20]))
       assert.throws(function () {
         matlab.Array(10, 20, 30)
+      }, Error, 'matlab.Array: Unimplemented arrays with 3 or more dimensions')
+      assert.throws(function () {
+        matlab.Array.fromJSArray([[[10, 20]]])
       }, Error, 'matlab.Array: Unimplemented arrays with 3 or more dimensions')
     })
 
@@ -25,6 +29,20 @@ describe('matlab.js', function () {
       })
       assert.deepEqual(values, [4, 5, 6])
       assert.deepEqual(indexes, [1, 2, 3])
+    })
+
+    it('map', function () {
+      var values = []
+      var indexes = []
+      var a = matlab.Array.fromJSArray([4, 5, 6])
+      var result = a.map(function (v, i) {
+        values.push(v)
+        indexes.push(i)
+        return v * 2
+      })
+      assert.deepEqual(values, [4, 5, 6])
+      assert.deepEqual(indexes, [1, 2, 3])
+      assert.deepEqual(result, matlab.Array.fromJSArray([8, 10, 12]))
     })
 
     it('equals', function () {
