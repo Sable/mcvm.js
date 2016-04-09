@@ -11,6 +11,7 @@ var _McLib = require(path.join(rootPath, 'lib', 'mclib'))
 var knownOpts = {
   'help': Boolean,
   'no-js-codegen': Boolean,
+  'no-preamble': Boolean,
   'pretty-print': Boolean,
   'read-matlab-json': Boolean,
   'run': Boolean,
@@ -28,6 +29,7 @@ var shortHands = {
 var description = {
   'help': ' Display this help',
   'no-js-codegen': ' Skip the JS code generation phase',
+  'no-preamble': ' Skip the preamble section with the library stuff',
   'pretty-print': ' The output and traces will be pretty printed',
   'read-matlab-json': ' FILE will be interpreted as a MATLAB JSON AST',
   'run': ' Run the generated code',
@@ -43,13 +45,19 @@ if (parsed.help || parsed.argv.remain.length < 1) {
   console.log(path.basename(__filename) + ' OPTIONS FILE(S)')
   console.log('Options:')
   console.log(usage)
+
+  if (parsed.verbose) {
+    console.log('Parsed options:')
+    console.log(parsed)
+  }
   process.exit(1)
 }
 
 var options = {
   prettyPrint: !!parsed['pretty-print'],
+  outputPreamble: parsed['preamble'] === undefined || !!parsed['preamble'],
   readMatlabJSON: !!parsed['read-matlab-json'],
-  jsCodegen: !parsed['nojs-codegen'],
+  jsCodegen: parsed['js-codegen'] === undefined || !!parsed['js-codegen'],
   traceJSAST: !!parsed['trace-js-ast'],
   traceMatlabAST: !!parsed['trace-matlab-ast'],
   traceJSCodeGen: !!parsed['trace-js-codegen'],
@@ -90,13 +98,15 @@ function codegenToJSStringThen (cb) {
   var matlabSrc = fs.readFileSync(path.join(__dirname, '..', 'lib', 'matlab.js')).toString()
   var mclibSrc = fs.readFileSync(path.join(__dirname, '..', 'lib', 'mclib.js')).toString()
   return function (ast) {
-    verboseLog('generating JS code from JS ast')
-    cb([
-      numericSrc,
-      matlabSrc,
-      mclibSrc,
-      escodegen.generate(ast)
-    ].join('\n'))
+    verboseLog('generating JS code from JS ast (preamble==' + options.outputPreamble + ')')
+    cb(((!options.outputPreamble
+      ? [escodegen.generate(ast)]
+      : [
+        numericSrc,
+        matlabSrc,
+        mclibSrc,
+        escodegen.generate(ast)
+      ]).join('\n')))
   }
 }
 
