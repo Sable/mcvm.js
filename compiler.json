@@ -10,7 +10,7 @@
     "runner-name":"runner.js",
     "commands": [
         {
-            "executable-path": { "suite-root": "/utilities/cat-with-nl" },
+            "executable-path": { "file": "./matlab-concat/cat-with-nl" },
             "options": [
                 { "config": "/implementation/core-source-files" },
                 { "config": "/implementation/runner-source-file" },
@@ -28,6 +28,16 @@
                     "value": { "config": "/compiler/runner-name" }
                 } 
             ]
+        }
+    ],
+    "dependencies": [
+        {
+            "source": "https://github.com/Sable/mclab-core/releases/download/v1.0.2/McLabCore.jar",
+            "destination": { "file": "./McLabCore" }
+        },
+        {
+            "source": "https://github.com/Sable/ostrich-matlab-concatenate-compiler.git",
+            "destination": { "file": "./matlab-concat" }
         }
     ]
 }
