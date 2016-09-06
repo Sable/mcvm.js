@@ -7,8 +7,11 @@ var noptUsage = require('nopt-usage')
 var rootPath = path.join(__dirname, '..')
 var McVMJS = require(path.join(rootPath, 'lib', 'main'))
 var _McLib = require(path.join(rootPath, 'lib', 'mclib'))
+var browserify = require('browserify')
+var str = require('string-to-stream')
 
 var knownOpts = {
+  'bundle': Boolean,
   'help': Boolean,
   'no-js-codegen': Boolean,
   'no-preamble': Boolean,
@@ -54,6 +57,7 @@ if (parsed.help || parsed.argv.remain.length < 1) {
 }
 
 var options = {
+  bundle: !!parsed['bundle'],
   prettyPrint: !!parsed['pretty-print'],
   outputPreamble: parsed['preamble'] === undefined || !!parsed['preamble'],
   readMatlabJSON: !!parsed['read-matlab-json'],
@@ -107,6 +111,21 @@ function codegenToJSStringThen (cb) {
         mclibSrc,
         escodegen.generate(ast)
       ]).join('\n')))
+  }
+}
+
+function browserifyJSThen (cb) {
+  return function (code) {
+    browserify(str(code), {
+      basedir: path.join(__dirname, '..'),
+      standalone: 'bundle'
+    }).bundle((err, s) => {
+      if (err) {
+        console.log(err)
+        process.exit(1)
+      }
+      cb(String(s))
+    })
   }
 }
 
@@ -167,6 +186,14 @@ if (options.traceJSAST === true) {
 
 if (options.jsCodegen === true) {
   steps.push(codegenToJSStringThen)
+  if (!options.run && !options.bundle) {
+    steps.push(logThen)
+  }
+}
+
+if (options.bundle === true) {
+  steps.push(browserifyJSThen)
+
   if (!options.run) {
     steps.push(logThen)
   }
