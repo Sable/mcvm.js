@@ -1,4 +1,4 @@
-mcvm-js
+mcvm.js
 =======
 
 Dynamically optimizing VM for MATLAB using JavaScript as a target.
@@ -11,7 +11,7 @@ Required Dependencies
 
 make install will call npm to install the required dependencies.
 
-The McLabCore jar should manually be put in a 'deps' directory from the project root.
+The McLabCore jar should manually be put in a 'McLabCore' directory from the project root.
 
 Usage
 =======
